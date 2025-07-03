@@ -4,6 +4,7 @@ import Foundation
 class GameViewModel: ObservableObject {
     @Published var players: [Player]
     @Published var pot: Int
+    @Published var currentBet: Int
     
     init() {
         self.players = [
@@ -12,6 +13,7 @@ class GameViewModel: ObservableObject {
             Player(name: "AI 2", hand: [], chips: 1000)
         ]
         self.pot = 0
+        self.currentBet = 0
         dealInitialHands()
     }
     
@@ -27,5 +29,29 @@ class GameViewModel: ObservableObject {
             Card(suit: "♠", rank: "A"),
             Card(suit: "♠", rank: "K")
         ]
+    }
+    
+    func fold() {
+        // For now, just end the round and give the pot to the first AI
+        pot = 0
+        players[1].chips += pot
+        dealInitialHands()
+    }
+    
+    func check() {
+        // For now, just advance to the next player
+    }
+    
+    func bet(amount: Int) {
+        players[0].chips -= amount
+        pot += amount
+        currentBet = amount
+    }
+    
+    func raise(amount: Int) {
+        let raiseAmount = amount - currentBet
+        players[0].chips -= raiseAmount
+        pot += raiseAmount
+        currentBet = amount
     }
 }

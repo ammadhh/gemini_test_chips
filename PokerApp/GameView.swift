@@ -3,6 +3,7 @@ import SwiftUI
 
 struct GameView: View {
     @StateObject private var viewModel = GameViewModel()
+    @State private var betAmount: Double = 10.0
     
     var body: some View {
         VStack {
@@ -41,12 +42,16 @@ struct GameView: View {
             }
             .padding()
             
+            // Bet slider
+            Slider(value: $betAmount, in: 10...Double(viewModel.players[0].chips), step: 10)
+            Text("Bet: $\(Int(betAmount))")
+            
             // Action buttons
             HStack {
-                Button("Fold") { }
-                Button("Check") { }
-                Button("Bet") { }
-                Button("Raise") { }
+                Button("Fold") { viewModel.fold() }
+                Button("Check") { viewModel.check() }
+                Button("Bet") { viewModel.bet(amount: Int(betAmount)) }
+                Button("Raise") { viewModel.raise(amount: Int(betAmount)) }
             }
             .padding()
         }
