@@ -68,10 +68,38 @@ struct PokerTableView: View {
                     Text("Your Bet: $\(Int(betAmount))")
                         .foregroundColor(.white)
 
-                    
+                    HStack {
+                        Button("Fold") {
+                            gameViewModel.fold()
+                        }
+                        .buttonStyle(ActionButtonStyle())
+                        .disabled(gameViewModel.players[0].id != gameViewModel.currentPlayer.id || gameViewModel.gameState == .gameOver)
 
-                    
-                }
+                        Button("Check") {
+                            gameViewModel.check()
+                        }
+                        .buttonStyle(ActionButtonStyle())
+                        .disabled(gameViewModel.players[0].id != gameViewModel.currentPlayer.id || gameViewModel.currentBet > gameViewModel.players[0].currentBet || gameViewModel.gameState == .gameOver)
+
+                        Button("Call") {
+                            gameViewModel.bet(amount: gameViewModel.currentBet)
+                        }
+                        .buttonStyle(ActionButtonStyle())
+                        .disabled(gameViewModel.players[0].id != gameViewModel.currentPlayer.id || gameViewModel.currentBet == gameViewModel.players[0].currentBet || gameViewModel.gameState == .gameOver)
+
+                        Button("Bet") {
+                            gameViewModel.bet(amount: Int(betAmount))
+                        }
+                        .buttonStyle(ActionButtonStyle())
+                        .disabled(gameViewModel.players[0].id != gameViewModel.currentPlayer.id || gameViewModel.currentBet > gameViewModel.players[0].currentBet || gameViewModel.gameState == .gameOver)
+
+                        Button("Raise") {
+                            gameViewModel.raise(amount: Int(betAmount))
+                        }
+                        .buttonStyle(ActionButtonStyle())
+                        .disabled(gameViewModel.players[0].id != gameViewModel.currentPlayer.id || Int(betAmount) <= gameViewModel.currentBet || gameViewModel.gameState == .gameOver)
+                    }
+                    .padding()
             }
 
             if showingNameInput {

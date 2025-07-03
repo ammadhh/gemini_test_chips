@@ -122,12 +122,15 @@ class GameViewModel: ObservableObject {
     
     func bet(amount: Int) {
         if let index = players.firstIndex(where: { $0.isUser }) {
-            let betDifference = amount - players[index].currentBet
+            let player = players[index]
+            let amountToBet = min(amount, player.chips + player.currentBet) // Ensure player doesn't bet more than they have
+            let betDifference = amountToBet - player.currentBet
+
             players[index].chips -= betDifference
             pot += betDifference
-            players[index].currentBet = amount
-            currentBet = amount
-            lastAction = "\(players[index].name) bets $\(amount)"
+            players[index].currentBet = amountToBet
+            currentBet = max(currentBet, amountToBet) // Current bet is the highest bet on the table
+            lastAction = "\(player.name) bets $\(amountToBet)"
             chipAnimationTrigger.toggle()
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 self.nextTurn()
@@ -137,13 +140,26 @@ class GameViewModel: ObservableObject {
     
     func raise(amount: Int) {
         if let index = players.firstIndex(where: { $0.isUser }) {
-            let raiseAmount = amount - players[index].currentBet
-            players[index].chips -= raiseAmount
-            pot += raiseAmount
-            players[index].currentBet = amount
-            currentBet = amount
-            lastAction = "\(players[index].name) raises to $\(amount)"
-            chipAnimationTrigger.toggle()
+            let player = players[index]
+            let amountToRaiseTo = max(amount, currentBet + 10) // Must raise at least by the minimum bet increment
+            let raiseDifference = amountToRaiseTo - player.currentBet
+            
+            if player.chips >= raiseDifference {
+                players[index].chips -= raiseDifference
+                pot += raiseDifference
+                players[index].currentBet = amountToRaiseTo
+                currentBet = amountToRaiseTo
+                lastAction = "\(player.name) raises to $\(amountToRaiseTo)"
+                chipAnimationTrigger.toggle()
+            } else { // All-in raise
+                let allInAmount = player.chips
+                players[index].chips = 0
+                pot += allInAmount
+                players[index].currentBet += allInAmount
+                currentBet = max(currentBet, players[index].currentBet)
+                lastAction = "\(player.name) goes all-in for $\(players[index].currentBet)"
+                chipAnimationTrigger.toggle()
+            }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 self.nextTurn()
             }
