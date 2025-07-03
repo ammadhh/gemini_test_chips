@@ -185,13 +185,13 @@ class GameViewModel: ObservableObject {
         resetBets()
         switch currentBettingRound {
         case .preFlop:
-            dealFlop()
+            dealCommunityCards(count: 3) // Flop
             currentBettingRound = .flop
         case .flop:
-            dealTurn()
+            dealCommunityCards(count: 1) // Turn
             currentBettingRound = .turn
         case .turn:
-            dealRiver()
+            dealCommunityCards(count: 1) // River
             currentBettingRound = .river
         case .river:
             determineWinner()
@@ -207,11 +207,22 @@ class GameViewModel: ObservableObject {
         }
     }
 
+    func dealCommunityCards(count: Int) {
+        _ = deck.popLast() // Burn a card
+        for _ in 0..<count {
+            if let card = deck.popLast() {
+                communityCards.append(card)
+            }
+        }
+    }
+
     func determineWinner() {
-        // Mock winner for now
+        // A more realistic (but still simplified) winner determination
         let activePlayers = players.filter { !$0.isFolded }
-        if let winningPlayer = activePlayers.randomElement() {
-            lastAction = "\(winningPlayer.name) wins $\(pot)!""
+
+        if activePlayers.count == 1 {
+            let winningPlayer = activePlayers[0]
+            lastAction = "\(winningPlayer.name) wins $\(pot)!"
             if let index = players.firstIndex(where: { $0.id == winningPlayer.id }) {
                 players[index].chips += pot
                 if players[index].isUser {
@@ -220,8 +231,22 @@ class GameViewModel: ObservableObject {
                     statsViewModel.logLoss() // User loses if AI wins
                 }
             }
-        } else {
-            lastAction = "No winner, pot returned."
+        } else { // Multiple players, determine winner based on hand strength (mocked)
+            // In a real game, you'd evaluate poker hands here.
+            // For now, let's just pick a random active player as the winner.
+            if let winningPlayer = activePlayers.randomElement() {
+                lastAction = "\(winningPlayer.name) wins $\(pot)!"
+                if let index = players.firstIndex(where: { $0.id == winningPlayer.id }) {
+                    players[index].chips += pot
+                    if players[index].isUser {
+                        statsViewModel.logWin(amount: pot)
+                    } else {
+                        statsViewModel.logLoss() // User loses if AI wins
+                    }
+                }
+            } else {
+                lastAction = "No winner, pot returned."
+            }
         }
         pot = 0
 

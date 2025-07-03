@@ -64,38 +64,7 @@ struct PokerTableView: View {
                     Text("Your Bet: $\(Int(betAmount))")
                         .foregroundColor(.white)
 
-                    HStack {
-                        Button("Fold") {
-                            gameViewModel.fold()
-                        }
-                        .buttonStyle(ActionButtonStyle())
-                        .disabled(gameViewModel.players[0].id != gameViewModel.currentPlayer.id)
-
-                        Button("Check") {
-                            gameViewModel.check()
-                        }
-                        .buttonStyle(ActionButtonStyle())
-                        .disabled(gameViewModel.players[0].id != gameViewModel.currentPlayer.id || gameViewModel.currentBet > gameViewModel.players[0].currentBet)
-
-                        Button("Call") {
-                            gameViewModel.bet(amount: gameViewModel.currentBet)
-                        }
-                        .buttonStyle(ActionButtonStyle())
-                        .disabled(gameViewModel.players[0].id != gameViewModel.currentPlayer.id || gameViewModel.currentBet == gameViewModel.players[0].currentBet)
-
-                        Button("Bet") {
-                            gameViewModel.bet(amount: Int(betAmount))
-                        }
-                        .buttonStyle(ActionButtonStyle())
-                        .disabled(gameViewModel.players[0].id != gameViewModel.currentPlayer.id || gameViewModel.currentBet > gameViewModel.players[0].currentBet)
-
-                        Button("Raise") {
-                            gameViewModel.raise(amount: Int(betAmount))
-                        }
-                        .buttonStyle(ActionButtonStyle())
-                        .disabled(gameViewModel.players[0].id != gameViewModel.currentPlayer.id || Int(betAmount) <= gameViewModel.currentBet)
-                    }
-                    .padding()
+                    
 
                     
                 }
