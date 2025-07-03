@@ -21,6 +21,7 @@ class GameViewModel: ObservableObject {
     @Published var currentActorIndex: Int = 0
     @Published var lastAction: String = ""
     @Published var currentBettingRound: BettingRound = .preFlop
+    @Published var chipAnimationTrigger: Bool = false
     public var statsViewModel: StatsViewModel
 
     enum BettingRound {
@@ -86,7 +87,15 @@ class GameViewModel: ObservableObject {
         for _ in 0..<2 { // Deal two cards to each player
             for i in 0..<players.count {
                 if let card = deck.popLast() {
-                    players[i].hand.append(card)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 0.1) {
+                        var newCard = card
+                        if self.players[i].isUser {
+                            newCard.isFaceUp = true
+                        } else {
+                            newCard.isFaceUp = false
+                        }
+                        self.players[i].hand.append(newCard)
+                    }
                 }
             }
         }
@@ -119,7 +128,10 @@ class GameViewModel: ObservableObject {
             players[index].currentBet = amount
             currentBet = amount
             lastAction = "\(players[index].name) bets $\(amount)"
-            nextTurn()
+            chipAnimationTrigger.toggle()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self.nextTurn()
+            }
         }
     }
     
@@ -131,7 +143,10 @@ class GameViewModel: ObservableObject {
             players[index].currentBet = amount
             currentBet = amount
             lastAction = "\(players[index].name) raises to $\(amount)"
-            nextTurn()
+            chipAnimationTrigger.toggle()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self.nextTurn()
+            }
         }
     }
     
@@ -209,9 +224,13 @@ class GameViewModel: ObservableObject {
 
     func dealCommunityCards(count: Int) {
         _ = deck.popLast() // Burn a card
-        for _ in 0..<count {
+        for i in 0..<count {
             if let card = deck.popLast() {
-                communityCards.append(card)
+                DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 0.2) {
+                    var newCard = card
+                    newCard.isFaceUp = true
+                    self.communityCards.append(newCard)
+                }
             }
         }
     }

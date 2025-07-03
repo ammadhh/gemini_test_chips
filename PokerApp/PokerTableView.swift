@@ -17,8 +17,10 @@ struct PokerTableView: View {
                 HStack {
                     Spacer()
                     PlayerView(player: gameViewModel.players[1])
+                        .border(gameViewModel.players[1].id == gameViewModel.currentPlayer.id ? Color.yellow : Color.clear, width: 3)
                     Spacer()
                     PlayerView(player: gameViewModel.players[2])
+                        .border(gameViewModel.players[2].id == gameViewModel.currentPlayer.id ? Color.yellow : Color.clear, width: 3)
                     Spacer()
                 }
 
@@ -38,6 +40,7 @@ struct PokerTableView: View {
                         .foregroundColor(.white)
                         .padding()
                         .background(Capsule().fill(Color.black.opacity(0.5)))
+                        .animation(.easeInOut(duration: 0.5), value: gameViewModel.pot)
 
                     Text(gameViewModel.lastAction)
                         .font(.subheadline)
@@ -49,6 +52,7 @@ struct PokerTableView: View {
 
                 // User Player (Bottom Center)
                 PlayerView(player: gameViewModel.players[0])
+                    .border(gameViewModel.players[0].id == gameViewModel.currentPlayer.id ? Color.yellow : Color.clear, width: 3)
 
                 // Action Buttons
                 VStack {

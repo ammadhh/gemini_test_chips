@@ -5,6 +5,7 @@ struct Card: Identifiable {
     let id = UUID()
     let suit: String
     let rank: String
+    var isFaceUp: Bool = false
 
     var imageName: String {
         return "\(rank)_of_\(suit)"
