@@ -15,7 +15,7 @@ struct PlayerInfoView: View {
                 .foregroundColor(.white)
             HStack {
                 ForEach(player.hand) { card in
-                    CardView(card: card, isFaceUp: isUser || player.isFolded)
+                    CardView(card: card, isFaceUp: isUser || !player.isFolded)
                 }
             }
         }

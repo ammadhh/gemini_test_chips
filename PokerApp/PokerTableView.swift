@@ -92,6 +92,26 @@ struct PokerTableView: View {
                     .cornerRadius(10)
                 }
                 .padding(50)
+            } else if gameViewModel.gameState == .gameOver {
+                Color.black.opacity(0.7).edgesIgnoringSafeArea(.all)
+                VStack {
+                    Text("Game Over!")
+                        .font(.largeTitle)
+                        .foregroundColor(.white)
+                        .padding()
+                    Text(gameViewModel.lastAction)
+                        .font(.title2)
+                        .foregroundColor(.red)
+                        .padding()
+                    Button("Play Again") {
+                        gameViewModel.resetGame()
+                    }
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                }
+                .padding(50)
             }
         }
         .onAppear {

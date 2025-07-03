@@ -235,13 +235,98 @@ class GameViewModel: ObservableObject {
         }
     }
 
+    func nextTurn() {
+        var activePlayersInRound = players.filter { !$0.isFolded && $0.chips > 0 }
+
+        if activePlayersInRound.isEmpty {
+            determineWinner()
+            return
+        }
+
+        var playersToAct = activePlayersInRound.filter { $0.currentBet < currentBet || ($0.currentBet == currentBet && currentBet == 0) }
+
+        if playersToAct.isEmpty { // All active players have matched the current bet or are all-in
+            advanceRound()
+            return
+        }
+
+        // Find the next player to act
+        var nextPlayerIndex = (currentActorIndex + 1) % players.count
+        var loopCount = 0
+        while (players[nextPlayerIndex].isFolded || players[nextPlayerIndex].chips == 0 || players[nextPlayerIndex].currentBet == currentBet) && loopCount < players.count * 2 {
+            nextPlayerIndex = (nextPlayerIndex + 1) % players.count
+            loopCount += 1
+        }
+
+        if loopCount >= players.count * 2 { // Looped through all players, and no one needs to act
+            advanceRound()
+            return
+        }
+        
+        currentActorIndex = nextPlayerIndex
+
+        if players[currentActorIndex].isUser {
+            // User's turn, wait for action
+            return
+        } else {
+            // AI's turn, perform action immediately
+            performAIAction()
+        }
+    }
+
+    func resetBets() {
+        for i in 0..<players.count {
+            players[i].currentBet = 0
+        }
+        currentBet = 0
+    }
+
+    func advanceRound() {
+        resetBets()
+        switch currentBettingRound {
+        case .preFlop:
+            dealCommunityCards(count: 3) // Flop
+            currentBettingRound = .flop
+        case .flop:
+            dealCommunityCards(count: 1) // Turn
+            currentBettingRound = .turn
+        case .turn:
+            dealCommunityCards(count: 1) // River
+            currentBettingRound = .river
+        case .river:
+            determineWinner()
+            currentBettingRound = .showdown
+        case .showdown:
+            // This case should ideally lead to a new round setup after winner is determined
+            break
+        }
+        currentActorIndex = 0 // Reset turn to the first active player
+        // Trigger AI action if it's an AI's turn after advancing round
+        if !players[currentActorIndex].isUser && !players[currentActorIndex].isFolded {
+            performAIAction()
+        }
+    }
+
+    func dealCommunityCards(count: Int) {
+        _ = deck.popLast() // Burn a card
+        for i in 0..<count {
+            if let card = deck.popLast() {
+                DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 0.2) {
+                    var newCard = card
+                    newCard.isFaceUp = true
+                    self.communityCards.append(newCard)
+                }
+            }
+        }
+    }
+
     func determineWinner() {
         // A more realistic (but still simplified) winner determination
-        let activePlayers = players.filter { !$0.isFolded }
+        let activePlayers = players.filter { !$0.isFolded && $0.chips > 0 }
 
         if activePlayers.count == 1 {
             let winningPlayer = activePlayers[0]
-            lastAction = "\(winningPlayer.name) wins $\(pot)!"
+            lastAction = "\(winningPlayer.name) wins $\(pot)!""
             if let index = players.firstIndex(where: { $0.id == winningPlayer.id }) {
                 players[index].chips += pot
                 if players[index].isUser {
@@ -254,7 +339,7 @@ class GameViewModel: ObservableObject {
             // In a real game, you'd evaluate poker hands here.
             // For now, let's just pick a random active player as the winner.
             if let winningPlayer = activePlayers.randomElement() {
-                lastAction = "\(winningPlayer.name) wins $\(pot)!"
+                lastAction = "\(winningPlayer.name) wins $\(pot)!""
                 if let index = players.firstIndex(where: { $0.id == winningPlayer.id }) {
                     players[index].chips += pot
                     if players[index].isUser {
@@ -269,64 +354,87 @@ class GameViewModel: ObservableObject {
         }
         pot = 0
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-            self.setupNewRound()
+        // Check for game over condition
+        if players.first(where: { $0.isUser })?.chips == 0 {
+            gameState = .gameOver
+            lastAction = "Game Over! You ran out of chips."
+        } else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                self.setupNewRound()
+            }
         }
+    }
+
+    func resetGame() {
+        players = [
+            Player(name: "Player", hand: [], chips: 1000, isUser: true)
+        ]
+        for i in 1...2 {
+            players.append(Player(name: "AI Player \(i)", hand: [], chips: 1000))
+        }
+        setupNewRound()
     }
     
     func performAIAction() {
         let aiPlayer = players[currentActorIndex]
         let callAmount = currentBet - aiPlayer.currentBet
 
-        // Simple AI logic
-        if currentBet == 0 { // No bet yet, AI can check or bet
-            if Int.random(in: 0...1) == 0 { // 50% chance to check
-                lastAction = "\(aiPlayer.name) checks"
-            } else { // 50% chance to bet
-                let betAmount = min(aiPlayer.chips, 50) // Bet 50 or all-in
-                players[currentActorIndex].chips -= betAmount
-                pot += betAmount
-                players[currentActorIndex].currentBet = betAmount
-                currentBet = betAmount
-                lastAction = "\(aiPlayer.name) bets $\(betAmount)"
-            }
-        } else { // There's a bet, AI can call, fold, or raise
-            let randomAction = Int.random(in: 1...10)
-            if randomAction <= 5 { // Call
-                if aiPlayer.chips >= callAmount {
-                    players[currentActorIndex].chips -= callAmount
-                    pot += callAmount
-                    players[currentActorIndex].currentBet = currentBet
-                    lastAction = "\(aiPlayer.name) calls"
-                } else { // Not enough chips to call, so fold
-                    players[currentActorIndex].isFolded = true
-                    lastAction = "\(aiPlayer.name) folds (not enough chips to call)"
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            guard let self = self else { return }
+            // Simple AI logic
+            if self.currentBet == 0 { // No bet yet, AI can check or bet
+                if Int.random(in: 0...1) == 0 { // 50% chance to check
+                    self.lastAction = "\(aiPlayer.name) checks"
+                } else { // 50% chance to bet
+                    let betAmount = min(aiPlayer.chips, 50) // Bet 50 or all-in
+                    self.players[self.currentActorIndex].chips -= betAmount
+                    self.pot += betAmount
+                    self.players[self.currentActorIndex].currentBet = betAmount
+                    self.currentBet = betAmount
+                    self.lastAction = "\(aiPlayer.name) bets $\(betAmount)"
+                    self.chipAnimationTrigger.toggle()
                 }
-            } else if randomAction <= 8 { // Fold
-                players[currentActorIndex].isFolded = true
-                lastAction = "\(aiPlayer.name) folds"
-            } else { // Raise
-                let raiseAmount = currentBet + min(50, aiPlayer.chips - callAmount) // Raise by 50 or all-in
-                if aiPlayer.chips >= raiseAmount {
-                    players[currentActorIndex].chips -= raiseAmount
-                    pot += raiseAmount
-                    currentBet = raiseAmount
-                    players[currentActorIndex].currentBet = raiseAmount
-                    lastAction = "\(aiPlayer.name) raises to $\(raiseAmount)"
-                } else { // Not enough chips to raise, so call or fold
+            } else { // There's a bet, AI can call, fold, or raise
+                let randomAction = Int.random(in: 1...10)
+                if randomAction <= 5 { // Call
                     if aiPlayer.chips >= callAmount {
-                        players[currentActorIndex].chips -= callAmount
-                        pot += callAmount
-                        players[currentActorIndex].currentBet = currentBet
-                        lastAction = "\(aiPlayer.name) calls (not enough chips to raise)"
-                    } else {
-                        players[currentActorIndex].isFolded = true
-                        lastAction = "\(aiPlayer.name) folds (not enough chips to call or raise)"
+                        self.players[self.currentActorIndex].chips -= callAmount
+                        self.pot += callAmount
+                        self.players[self.currentActorIndex].currentBet = self.currentBet
+                        self.lastAction = "\(aiPlayer.name) calls"
+                        self.chipAnimationTrigger.toggle()
+                    } else { // Not enough chips to call, so fold
+                        self.players[self.currentActorIndex].isFolded = true
+                        self.lastAction = "\(aiPlayer.name) folds (not enough chips to call)"
+                    }
+                } else if randomAction <= 8 { // Fold
+                    self.players[self.currentActorIndex].isFolded = true
+                    self.lastAction = "\(aiPlayer.name) folds"
+                } else { // Raise
+                    let raiseAmount = self.currentBet + min(50, aiPlayer.chips - callAmount) // Raise by 50 or all-in
+                    if aiPlayer.chips >= raiseAmount {
+                        self.players[self.currentActorIndex].chips -= raiseAmount
+                        self.pot += raiseAmount
+                        self.currentBet = raiseAmount
+                        self.players[self.currentActorIndex].currentBet = raiseAmount
+                        self.lastAction = "\(aiPlayer.name) raises to $\(raiseAmount)"
+                        self.chipAnimationTrigger.toggle()
+                    } else { // Not enough chips to raise, so call or fold
+                        if aiPlayer.chips >= callAmount {
+                            self.players[self.currentActorIndex].chips -= callAmount
+                            self.pot += callAmount
+                            self.players[self.currentActorIndex].currentBet = self.currentBet
+                            self.lastAction = "\(aiPlayer.name) calls (not enough chips to raise)"
+                            self.chipAnimationTrigger.toggle()
+                        } else {
+                            self.players[self.currentActorIndex].isFolded = true
+                            self.lastAction = "\(aiPlayer.name) folds (not enough chips to call or raise)"
+                        }
                     }
                 }
             }
+            self.nextTurn()
         }
-        nextTurn()
     }
 
     func determineWinner() {
