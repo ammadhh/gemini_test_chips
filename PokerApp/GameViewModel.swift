@@ -5,8 +5,9 @@ class GameViewModel: ObservableObject {
     @Published var players: [Player]
     @Published var pot: Int
     @Published var currentBet: Int
+    private var statsViewModel: StatsViewModel
     
-    init() {
+    init(statsViewModel: StatsViewModel) {
         self.players = [
             Player(name: "Player 1", hand: [], chips: 1000),
             Player(name: "AI 1", hand: [], chips: 1000),
@@ -14,6 +15,7 @@ class GameViewModel: ObservableObject {
         ]
         self.pot = 0
         self.currentBet = 0
+        self.statsViewModel = statsViewModel
         dealInitialHands()
     }
     
@@ -33,6 +35,7 @@ class GameViewModel: ObservableObject {
     
     func fold() {
         // For now, just end the round and give the pot to the first AI
+        statsViewModel.logLoss()
         pot = 0
         players[1].chips += pot
         dealInitialHands()
