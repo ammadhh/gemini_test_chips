@@ -52,27 +52,43 @@ struct PokerTableView: View {
 
                 // Action Buttons
                 VStack {
-                    Slider(value: $betAmount, in: 0...Double(gameViewModel.players[0].chips), step: 10) {
+                    Slider(value: $betAmount, in: Double(gameViewModel.currentBet)...Double(gameViewModel.players[0].chips), step: 10) {
                         Text("Bet Amount")
                     } minimumValueLabel: {
-                        Text("$0")
+                        Text("$\(gameViewModel.currentBet)")
                     } maximumValueLabel: {
                         Text("$\(gameViewModel.players[0].chips)")
                     }
                     .padding(.horizontal)
 
-                    Text("Current Bet: $\(Int(betAmount))")
+                    Text("Your Bet: $\(Int(betAmount))")
                         .foregroundColor(.white)
 
                     HStack {
-                        Button("Fold") { gameViewModel.fold() }
-                            .buttonStyle(ActionButtonStyle())
-                        Button("Check") { gameViewModel.check() }
-                            .buttonStyle(ActionButtonStyle())
-                        Button("Bet") { gameViewModel.bet(amount: Int(betAmount)) }
-                            .buttonStyle(ActionButtonStyle())
-                        Button("Raise") { gameViewModel.raise(amount: Int(betAmount)) }
-                            .buttonStyle(ActionButtonStyle())
+                        Button("Fold") {
+                            gameViewModel.fold()
+                        }
+                        .buttonStyle(ActionButtonStyle())
+
+                        Button("Check") {
+                            gameViewModel.check()
+                        }
+                        .buttonStyle(ActionButtonStyle())
+
+                        Button("Call") {
+                            gameViewModel.bet(amount: gameViewModel.currentBet)
+                        }
+                        .buttonStyle(ActionButtonStyle())
+
+                        Button("Bet") {
+                            gameViewModel.bet(amount: Int(betAmount))
+                        }
+                        .buttonStyle(ActionButtonStyle())
+
+                        Button("Raise") {
+                            gameViewModel.raise(amount: Int(betAmount))
+                        }
+                        .buttonStyle(ActionButtonStyle())
                     }
                     .padding()
 
