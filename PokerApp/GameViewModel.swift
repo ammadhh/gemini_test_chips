@@ -18,10 +18,18 @@ class GameViewModel: ObservableObject {
     @Published var currentBet: Int
     @Published var communityCards: [Card]
     @Published var gameState: GameState = .waitingForPlayers
-    @Published var currentPlayerIndex: Int = 0
+    @Published var currentActorIndex: Int = 0
     @Published var lastAction: String = ""
-    @Published var currentRoundBettingComplete: Bool = false
+    @Published var currentBettingRound: BettingRound = .preFlop
     public var statsViewModel: StatsViewModel
+
+    enum BettingRound {
+        case preFlop
+        case flop
+        case turn
+        case river
+        case showdown
+    }
     
     private var deck: [Card] = []
     
@@ -41,7 +49,7 @@ class GameViewModel: ObservableObject {
     }
 
     var currentPlayer: Player {
-        return players[currentPlayerIndex]
+        return players[currentActorIndex]
     }
     
     func setupNewRound() {
@@ -59,7 +67,7 @@ class GameViewModel: ObservableObject {
         lastAction = ""
         dealInitialHands()
         gameState = .preFlop
-        currentPlayerIndex = 0 // User starts
+        currentActorIndex = 0 // User starts
     }
     
     func createDeck() -> [Card] {
@@ -143,17 +151,17 @@ class GameViewModel: ObservableObject {
         }
 
         // Find the next player to act
-        var nextPlayerIndex = (currentPlayerIndex + 1) % players.count
+        var nextPlayerIndex = (currentActorIndex + 1) % players.count
         while players[nextPlayerIndex].isFolded || players[nextPlayerIndex].chips == 0 || players[nextPlayerIndex].currentBet == currentBet {
             nextPlayerIndex = (nextPlayerIndex + 1) % players.count
-            if nextPlayerIndex == currentPlayerIndex { // Looped through all players, and no one needs to act
+            if nextPlayerIndex == currentActorIndex { // Looped through all players, and no one needs to act
                 advanceRound()
                 return
             }
         }
-        currentPlayerIndex = nextPlayerIndex
+        currentActorIndex = nextPlayerIndex
 
-        if players[currentPlayerIndex].isUser {
+        if players[currentActorIndex].isUser {
             // User's turn, wait for action
             return
         } else {
@@ -187,7 +195,7 @@ class GameViewModel: ObservableObject {
         default:
             break
         }
-        currentPlayerIndex = 0 // Reset turn to the first active player
+        currentActorIndex = 0 // Reset turn to the first active player
     }
 
     func determineWinner() {
@@ -214,7 +222,7 @@ class GameViewModel: ObservableObject {
     }
     
     func performAIAction() {
-        let aiPlayer = players[currentPlayerIndex]
+        let aiPlayer = players[currentActorIndex]
         let callAmount = currentBet - aiPlayer.currentBet
 
         // Simple AI logic
@@ -223,9 +231,9 @@ class GameViewModel: ObservableObject {
                 lastAction = "\(aiPlayer.name) checks"
             } else { // 50% chance to bet
                 let betAmount = min(aiPlayer.chips, 50) // Bet 50 or all-in
-                players[currentPlayerIndex].chips -= betAmount
+                players[currentActorIndex].chips -= betAmount
                 pot += betAmount
-                players[currentPlayerIndex].currentBet = betAmount
+                players[currentActorIndex].currentBet = betAmount
                 currentBet = betAmount
                 lastAction = "\(aiPlayer.name) bets $\(betAmount)"
             }
@@ -233,33 +241,33 @@ class GameViewModel: ObservableObject {
             let randomAction = Int.random(in: 1...10)
             if randomAction <= 5 { // Call
                 if aiPlayer.chips >= callAmount {
-                    players[currentPlayerIndex].chips -= callAmount
+                    players[currentActorIndex].chips -= callAmount
                     pot += callAmount
-                    players[currentPlayerIndex].currentBet = currentBet
+                    players[currentActorIndex].currentBet = currentBet
                     lastAction = "\(aiPlayer.name) calls"
                 } else { // Not enough chips to call, so fold
-                    players[currentPlayerIndex].isFolded = true
+                    players[currentActorIndex].isFolded = true
                     lastAction = "\(aiPlayer.name) folds (not enough chips to call)"
                 }
             } else if randomAction <= 8 { // Fold
-                players[currentPlayerIndex].isFolded = true
+                players[currentActorIndex].isFolded = true
                 lastAction = "\(aiPlayer.name) folds"
             } else { // Raise
                 let raiseAmount = currentBet + min(50, aiPlayer.chips - callAmount) // Raise by 50 or all-in
                 if aiPlayer.chips >= raiseAmount {
-                    players[currentPlayerIndex].chips -= raiseAmount
+                    players[currentActorIndex].chips -= raiseAmount
                     pot += raiseAmount
                     currentBet = raiseAmount
-                    players[currentPlayerIndex].currentBet = raiseAmount
+                    players[currentActorIndex].currentBet = raiseAmount
                     lastAction = "\(aiPlayer.name) raises to $\(raiseAmount)"
                 } else { // Not enough chips to raise, so call or fold
                     if aiPlayer.chips >= callAmount {
-                        players[currentPlayerIndex].chips -= callAmount
+                        players[currentActorIndex].chips -= callAmount
                         pot += callAmount
-                        players[currentPlayerIndex].currentBet = currentBet
+                        players[currentActorIndex].currentBet = currentBet
                         lastAction = "\(aiPlayer.name) calls (not enough chips to raise)"
                     } else {
-                        players[currentPlayerIndex].isFolded = true
+                        players[currentActorIndex].isFolded = true
                         lastAction = "\(aiPlayer.name) folds (not enough chips to call or raise)"
                     }
                 }
@@ -328,7 +336,7 @@ class GameViewModel: ObservableObject {
             players[i].currentBet = 0
         }
         currentBet = 0
-        currentPlayerIndex = 0 // Start betting from the first active player
+        currentActorIndex = 0 // Start betting from the first active player
     }
     
     func dealFlop() {

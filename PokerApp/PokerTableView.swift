@@ -69,38 +69,31 @@ struct PokerTableView: View {
                             gameViewModel.fold()
                         }
                         .buttonStyle(ActionButtonStyle())
+                        .disabled(gameViewModel.players[0].id != gameViewModel.currentPlayer.id)
 
                         Button("Check") {
                             gameViewModel.check()
                         }
                         .buttonStyle(ActionButtonStyle())
+                        .disabled(gameViewModel.players[0].id != gameViewModel.currentPlayer.id || gameViewModel.currentBet > gameViewModel.players[0].currentBet)
 
                         Button("Call") {
                             gameViewModel.bet(amount: gameViewModel.currentBet)
                         }
                         .buttonStyle(ActionButtonStyle())
+                        .disabled(gameViewModel.players[0].id != gameViewModel.currentPlayer.id || gameViewModel.currentBet == gameViewModel.players[0].currentBet)
 
                         Button("Bet") {
                             gameViewModel.bet(amount: Int(betAmount))
                         }
                         .buttonStyle(ActionButtonStyle())
+                        .disabled(gameViewModel.players[0].id != gameViewModel.currentPlayer.id || gameViewModel.currentBet > gameViewModel.players[0].currentBet)
 
                         Button("Raise") {
                             gameViewModel.raise(amount: Int(betAmount))
                         }
                         .buttonStyle(ActionButtonStyle())
-                    }
-                    .padding()
-
-                    HStack {
-                        Button("Flop") { gameViewModel.advanceRound() }
-                            .buttonStyle(ActionButtonStyle())
-                        Button("Turn") { gameViewModel.advanceRound() }
-                            .buttonStyle(ActionButtonStyle())
-                        Button("River") { gameViewModel.advanceRound() }
-                            .buttonStyle(ActionButtonStyle())
-                        Button("Showdown") { gameViewModel.advanceRound() }
-                            .buttonStyle(ActionButtonStyle())
+                        .disabled(gameViewModel.players[0].id != gameViewModel.currentPlayer.id || Int(betAmount) <= gameViewModel.currentBet)
                     }
                     .padding()
                 }
