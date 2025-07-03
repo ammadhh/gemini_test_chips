@@ -20,6 +20,7 @@ class GameViewModel: ObservableObject {
     @Published var gameState: GameState = .waitingForPlayers
     @Published var currentPlayerIndex: Int = 0
     @Published var lastAction: String = ""
+    @Published var currentRoundBettingComplete: Bool = false
     public var statsViewModel: StatsViewModel
     
     private var deck: [Card] = []
@@ -134,35 +135,30 @@ class GameViewModel: ObservableObject {
             return
         }
 
-        var originalPlayerIndex = currentPlayerIndex
-        var playersWhoHaveActedThisRound: [Player] = []
+        var playersToAct = activePlayersInRound.filter { $0.currentBet < currentBet || $0.currentBet == 0 }
 
-        repeat {
-            currentPlayerIndex = (currentPlayerIndex + 1) % players.count
-            let player = players[currentPlayerIndex]
-
-            if !player.isFolded {
-                if !playersWhoHaveActedThisRound.contains(where: { $0.id == player.id }) {
-                    playersWhoHaveActedThisRound.append(player)
-                }
-
-                if player.isUser {
-                    // User's turn, wait for action
-                    return
-                } else {
-                    // AI's turn, perform action immediately
-                    performAIAction()
-                }
-            }
-        } while currentPlayerIndex != originalPlayerIndex
-
-        // After a full loop, check if the betting round is complete
-        let allActivePlayersHaveMatchedBet = activePlayersInRound.allSatisfy { player in
-            player.currentBet == currentBet || player.chips == 0
+        if playersToAct.isEmpty { // All active players have matched the current bet or are all-in
+            advanceRound()
+            return
         }
 
-        if allActivePlayersHaveMatchedBet {
-            advanceRound()
+        // Find the next player to act
+        var nextPlayerIndex = (currentPlayerIndex + 1) % players.count
+        while players[nextPlayerIndex].isFolded || players[nextPlayerIndex].chips == 0 || players[nextPlayerIndex].currentBet == currentBet {
+            nextPlayerIndex = (nextPlayerIndex + 1) % players.count
+            if nextPlayerIndex == currentPlayerIndex { // Looped through all players, and no one needs to act
+                advanceRound()
+                return
+            }
+        }
+        currentPlayerIndex = nextPlayerIndex
+
+        if players[currentPlayerIndex].isUser {
+            // User's turn, wait for action
+            return
+        } else {
+            // AI's turn, perform action immediately
+            performAIAction()
         }
     }
 

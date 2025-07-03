@@ -93,13 +93,13 @@ struct PokerTableView: View {
                     .padding()
 
                     HStack {
-                        Button("Flop") { gameViewModel.dealFlop() }
+                        Button("Flop") { gameViewModel.advanceRound() }
                             .buttonStyle(ActionButtonStyle())
-                        Button("Turn") { gameViewModel.dealTurn() }
+                        Button("Turn") { gameViewModel.advanceRound() }
                             .buttonStyle(ActionButtonStyle())
-                        Button("River") { gameViewModel.dealRiver() }
+                        Button("River") { gameViewModel.advanceRound() }
                             .buttonStyle(ActionButtonStyle())
-                        Button("Showdown") { gameViewModel.determineWinner() }
+                        Button("Showdown") { gameViewModel.advanceRound() }
                             .buttonStyle(ActionButtonStyle())
                     }
                     .padding()
