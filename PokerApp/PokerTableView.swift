@@ -16,9 +16,9 @@ struct PokerTableView: View {
                 // AI Players (Top)
                 HStack {
                     Spacer()
-                    PlayerView(player: gameViewModel.players[1], isUser: false)
+                    PlayerView(player: gameViewModel.players[1])
                     Spacer()
-                    PlayerView(player: gameViewModel.players[2], isUser: false)
+                    PlayerView(player: gameViewModel.players[2])
                     Spacer()
                 }
 
@@ -38,12 +38,17 @@ struct PokerTableView: View {
                         .foregroundColor(.white)
                         .padding()
                         .background(Capsule().fill(Color.black.opacity(0.5)))
+
+                    Text(gameViewModel.lastAction)
+                        .font(.subheadline)
+                        .foregroundColor(.yellow)
+                        .padding(.top, 5)
                 }
 
                 Spacer()
 
                 // User Player (Bottom Center)
-                PlayerView(player: gameViewModel.players[0], isUser: true)
+                PlayerView(player: gameViewModel.players[0])
 
                 // Action Buttons
                 VStack {
@@ -67,6 +72,18 @@ struct PokerTableView: View {
                         Button("Bet") { gameViewModel.bet(amount: Int(betAmount)) }
                             .buttonStyle(ActionButtonStyle())
                         Button("Raise") { gameViewModel.raise(amount: Int(betAmount)) }
+                            .buttonStyle(ActionButtonStyle())
+                    }
+                    .padding()
+
+                    HStack {
+                        Button("Flop") { gameViewModel.dealFlop() }
+                            .buttonStyle(ActionButtonStyle())
+                        Button("Turn") { gameViewModel.dealTurn() }
+                            .buttonStyle(ActionButtonStyle())
+                        Button("River") { gameViewModel.dealRiver() }
+                            .buttonStyle(ActionButtonStyle())
+                        Button("Showdown") { gameViewModel.determineWinner() }
                             .buttonStyle(ActionButtonStyle())
                     }
                     .padding()
