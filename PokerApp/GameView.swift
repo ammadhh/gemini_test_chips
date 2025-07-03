@@ -2,13 +2,8 @@
 import SwiftUI
 
 struct GameView: View {
-    @StateObject private var viewModel: GameViewModel
-    @StateObject private var statsViewModel = StatsViewModel()
+    @StateObject private var viewModel = GameViewModel(statsViewModel: StatsViewModel())
     @State private var betAmount: Double = 10.0
-    
-    init() {
-        _viewModel = StateObject(wrappedValue: GameViewModel(statsViewModel: statsViewModel))
-    }
     
     var body: some View {
         NavigationView {
@@ -61,7 +56,7 @@ struct GameView: View {
                 }
                 .padding()
                 
-                NavigationLink(destination: StatsView().environmentObject(statsViewModel)) {
+                NavigationLink(destination: StatsView().environmentObject(viewModel.statsViewModel)) {
                     Text("View Stats")
                 }
             }

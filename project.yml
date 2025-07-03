@@ -12,3 +12,8 @@ targets:
       base:
         PRODUCT_NAME: PokerApp
         SWIFT_VERSION: 5.0
+        INFOPLIST_FILE: PokerApp/Info.plist
+        INFOPLIST_KEY_CFBundleVersion: 1
+        INFOPLIST_KEY_CFBundleShortVersionString: 1.0
+        INFOPLIST_KEY_CFBundleExecutable: $(PRODUCT_NAME)
+        INFOPLIST_KEY_CFBundleIdentifier: $(PRODUCT_BUNDLE_IDENTIFIER)

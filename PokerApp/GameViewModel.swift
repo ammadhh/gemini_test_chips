@@ -5,7 +5,7 @@ class GameViewModel: ObservableObject {
     @Published var players: [Player]
     @Published var pot: Int
     @Published var currentBet: Int
-    private var statsViewModel: StatsViewModel
+    public var statsViewModel: StatsViewModel
     
     init(statsViewModel: StatsViewModel) {
         self.players = [

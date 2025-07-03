@@ -7,14 +7,25 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		040B1A49228CEA14814F3D86 /* GameViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1A8F58514908FC0730B220A /* GameViewModel.swift */; };
+		5F886E8B35CE73A327D23236 /* GameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B46BB6D3536A339374D7B4F /* GameView.swift */; };
 		79FC243CB94A632691121634 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BE9B9C816E1C233ACC8D5F5 /* App.swift */; };
+		AE6E062EC270F281CB4908DE /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEBC412CF4C8B04D1D70D213 /* Models.swift */; };
+		B739C482DA2BC34F6AA9A074 /* StatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72AB2449FA6DAB3C4FF633E2 /* StatsView.swift */; };
 		CD34A5C5D30FC36DAA525ADD /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D49B1026CBF19D145032FA4 /* ContentView.swift */; };
+		CFE0931618A61E9635120BC7 /* StatsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EBEF2093A04AD8DF5F89738 /* StatsViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		0BE9B9C816E1C233ACC8D5F5 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
 		1D49B1026CBF19D145032FA4 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		66EDB4E3006C3DABB495DE15 /* PokerApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = PokerApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6B46BB6D3536A339374D7B4F /* GameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameView.swift; sourceTree = "<group>"; };
+		72AB2449FA6DAB3C4FF633E2 /* StatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsView.swift; sourceTree = "<group>"; };
+		924339B63537B5870120C310 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		9EBEF2093A04AD8DF5F89738 /* StatsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsViewModel.swift; sourceTree = "<group>"; };
+		A1A8F58514908FC0730B220A /* GameViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewModel.swift; sourceTree = "<group>"; };
+		BEBC412CF4C8B04D1D70D213 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -23,6 +34,12 @@
 			children = (
 				0BE9B9C816E1C233ACC8D5F5 /* App.swift */,
 				1D49B1026CBF19D145032FA4 /* ContentView.swift */,
+				6B46BB6D3536A339374D7B4F /* GameView.swift */,
+				A1A8F58514908FC0730B220A /* GameViewModel.swift */,
+				924339B63537B5870120C310 /* Info.plist */,
+				BEBC412CF4C8B04D1D70D213 /* Models.swift */,
+				72AB2449FA6DAB3C4FF633E2 /* StatsView.swift */,
+				9EBEF2093A04AD8DF5F89738 /* StatsViewModel.swift */,
 			);
 			path = PokerApp;
 			sourceTree = "<group>";
@@ -100,6 +117,11 @@
 			files = (
 				79FC243CB94A632691121634 /* App.swift in Sources */,
 				CD34A5C5D30FC36DAA525ADD /* ContentView.swift in Sources */,
+				5F886E8B35CE73A327D23236 /* GameView.swift in Sources */,
+				040B1A49228CEA14814F3D86 /* GameViewModel.swift in Sources */,
+				AE6E062EC270F281CB4908DE /* Models.swift in Sources */,
+				B739C482DA2BC34F6AA9A074 /* StatsView.swift in Sources */,
+				CFE0931618A61E9635120BC7 /* StatsViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -173,6 +195,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = PokerApp/Info.plist;
+				INFOPLIST_KEY_CFBundleExecutable = "$(PRODUCT_NAME)";
+				INFOPLIST_KEY_CFBundleIdentifier = "$(PRODUCT_BUNDLE_IDENTIFIER)";
+				INFOPLIST_KEY_CFBundleShortVersionString = 1.0;
+				INFOPLIST_KEY_CFBundleVersion = 1;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -246,6 +273,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = PokerApp/Info.plist;
+				INFOPLIST_KEY_CFBundleExecutable = "$(PRODUCT_NAME)";
+				INFOPLIST_KEY_CFBundleIdentifier = "$(PRODUCT_BUNDLE_IDENTIFIER)";
+				INFOPLIST_KEY_CFBundleShortVersionString = 1.0;
+				INFOPLIST_KEY_CFBundleVersion = 1;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
