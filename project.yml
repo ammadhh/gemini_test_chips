@@ -1,0 +1,14 @@
+
+name: PokerApp
+options:
+  bundleIdPrefix: com.example
+targets:
+  PokerApp:
+    type: application
+    platform: iOS
+    deploymentTarget: "15.0"
+    sources: [PokerApp]
+    settings:
+      base:
+        PRODUCT_NAME: PokerApp
+        SWIFT_VERSION: 5.0
