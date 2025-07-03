@@ -454,7 +454,15 @@ class GameViewModel: ObservableObject {
     }
 
     func determineWinner() {
-        let activePlayers = players.filter { !$0.isFolded }
+        // Reveal all hands
+        for i in 0..<players.count {
+            for j in 0..<players[i].hand.count {
+                players[i].hand[j].isFaceUp = true
+            }
+        }
+
+        let activePlayers = players.filter { !$0.isFolded && $0.chips > 0 }
+
         if activePlayers.count == 1 {
             let winningPlayer = activePlayers[0]
             lastAction = "\(winningPlayer.name) wins $\(pot)!"
@@ -466,23 +474,33 @@ class GameViewModel: ObservableObject {
                     statsViewModel.logLoss() // User loses if AI wins
                 }
             }
-        } else if let winningPlayer = activePlayers.randomElement() { // Mock winner for now
-            lastAction = "\(winningPlayer.name) wins $\(pot)!"
-            if let index = players.firstIndex(where: { $0.id == winningPlayer.id }) {
-                players[index].chips += pot
-                if players[index].isUser {
-                    statsViewModel.logWin(amount: pot)
-                } else {
-                    statsViewModel.logLoss() // User loses if AI wins
+        } else { // Multiple players, determine winner based on hand strength (mocked)
+            // In a real game, you'd evaluate poker hands here.
+            // For now, let's just pick a random active player as the winner.
+            if let winningPlayer = activePlayers.randomElement() {
+                lastAction = "\(winningPlayer.name) wins $\(pot)!"
+                if let index = players.firstIndex(where: { $0.id == winningPlayer.id }) {
+                    players[index].chips += pot
+                    if players[index].isUser {
+                        statsViewModel.logWin(amount: pot)
+                    } else {
+                        statsViewModel.logLoss() // User loses if AI wins
+                    }
                 }
+            } else {
+                lastAction = "No winner, pot returned."
             }
-        } else {
-            lastAction = "No winner, pot returned."
         }
         pot = 0
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-            self.setupNewRound()
+        // Check for game over condition
+        if players.first(where: { $0.isUser })?.chips == 0 {
+            gameState = .gameOver
+            lastAction = "Game Over! You ran out of chips."
+        } else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                self.setupNewRound()
+            }
         }
     }
     
