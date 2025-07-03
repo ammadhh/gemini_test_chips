@@ -143,7 +143,7 @@ class GameViewModel: ObservableObject {
             return
         }
 
-        var playersToAct = activePlayersInRound.filter { $0.currentBet < currentBet || $0.currentBet == 0 }
+        var playersToAct = activePlayersInRound.filter { $0.currentBet < currentBet || ($0.currentBet == currentBet && currentBet == 0) }
 
         if playersToAct.isEmpty { // All active players have matched the current bet or are all-in
             advanceRound()
@@ -152,13 +152,17 @@ class GameViewModel: ObservableObject {
 
         // Find the next player to act
         var nextPlayerIndex = (currentActorIndex + 1) % players.count
-        while players[nextPlayerIndex].isFolded || players[nextPlayerIndex].chips == 0 || players[nextPlayerIndex].currentBet == currentBet {
+        var loopCount = 0
+        while (players[nextPlayerIndex].isFolded || players[nextPlayerIndex].chips == 0 || players[nextPlayerIndex].currentBet == currentBet) && loopCount < players.count * 2 {
             nextPlayerIndex = (nextPlayerIndex + 1) % players.count
-            if nextPlayerIndex == currentActorIndex { // Looped through all players, and no one needs to act
-                advanceRound()
-                return
-            }
+            loopCount += 1
         }
+
+        if loopCount >= players.count * 2 { // Looped through all players, and no one needs to act
+            advanceRound()
+            return
+        }
+        
         currentActorIndex = nextPlayerIndex
 
         if players[currentActorIndex].isUser {
@@ -179,23 +183,28 @@ class GameViewModel: ObservableObject {
 
     func advanceRound() {
         resetBets()
-        switch gameState {
+        switch currentBettingRound {
         case .preFlop:
             dealFlop()
-            gameState = .flop
+            currentBettingRound = .flop
         case .flop:
             dealTurn()
-            gameState = .turn
+            currentBettingRound = .turn
         case .turn:
             dealRiver()
-            gameState = .river
+            currentBettingRound = .river
         case .river:
             determineWinner()
-            gameState = .showdown
-        default:
+            currentBettingRound = .showdown
+        case .showdown:
+            // This case should ideally lead to a new round setup after winner is determined
             break
         }
         currentActorIndex = 0 // Reset turn to the first active player
+        // Trigger AI action if it's an AI's turn after advancing round
+        if !players[currentActorIndex].isUser && !players[currentActorIndex].isFolded {
+            performAIAction()
+        }
     }
 
     func determineWinner() {

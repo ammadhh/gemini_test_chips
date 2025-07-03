@@ -96,6 +96,8 @@ struct PokerTableView: View {
                         .disabled(gameViewModel.players[0].id != gameViewModel.currentPlayer.id || Int(betAmount) <= gameViewModel.currentBet)
                     }
                     .padding()
+
+                    
                 }
             }
 
